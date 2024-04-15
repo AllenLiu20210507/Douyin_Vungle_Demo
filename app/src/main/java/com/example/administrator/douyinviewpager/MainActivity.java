@@ -5,32 +5,35 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.OrientationHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dingmouren.layoutmanagergroup.viewpager.OnViewPagerListener;
 import com.dingmouren.layoutmanagergroup.viewpager.ViewPagerLayoutManager;
-import com.vungle.warren.AdConfig;
-import com.vungle.warren.BannerAdConfig;
-import com.vungle.warren.Banners;
-import com.vungle.warren.InitCallback;
-import com.vungle.warren.LoadAdCallback;
-import com.vungle.warren.PlayAdCallback;
-import com.vungle.warren.Vungle;
-import com.vungle.warren.VungleBanner;
-import com.vungle.warren.VungleNativeAd;
-import com.vungle.warren.error.VungleException;
+import com.vungle.ads.BannerAd;
+import com.vungle.ads.BannerAdListener;
+import com.vungle.ads.BannerAdSize;
+import com.vungle.ads.BannerView;
+import com.vungle.ads.BaseAd;
+import com.vungle.ads.InitializationListener;
+import com.vungle.ads.VungleAds;
+import com.vungle.ads.VungleError;
 
-import static com.vungle.warren.Vungle.getValidPlacements;
+
+import org.jetbrains.annotations.NotNull;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,10 +41,11 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private ViewPagerLayoutManager mLayoutManager;
-    private String  mrecPlacmentId="MREC_TEST-9283413";
-    private String  bannerPlacementID="ALLEN_BANNER_TEST-2048589";
-    private String  vungleAppId="5df0a46e2b8ae90011798d50";
-    private VungleBanner vungleBanner;
+    private String  mrecPlacmentId="ALLEN_TEST_MREC-4448051";
+    private String  bannerPlacementID="NON_HB_MREC-4656953";
+    private String  vungleAppId="6285f650556a4f983b636be8";
+    private BannerAd bannerAd;
+    private BannerView bannerView;
 
 
     @Override
@@ -54,112 +58,124 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initSDK() {
-        Vungle.init(vungleAppId, getApplicationContext(), new InitCallback() {
+
+        VungleAds.init(MainActivity.this, vungleAppId, new InitializationListener() {
             @Override
             public void onSuccess() {
-                if (Vungle.isInitialized()){
-                    BannerAdConfig mrecAdConfig = new BannerAdConfig();
-                    mrecAdConfig.setAdSize(AdConfig.AdSize.VUNGLE_MREC);
-                    Banners.loadBanner(mrecPlacmentId, mrecAdConfig, vungleLoadAdCallback);
-                    BannerAdConfig bannerAdConfig = new BannerAdConfig();
-                    bannerAdConfig.setAdSize(AdConfig.AdSize.BANNER);
-                    Banners.loadBanner(bannerPlacementID, bannerAdConfig, vungleLoadAdCallback);
-                }
-            }
-
-            @Override
-            public void onError(VungleException throwable) {
+                Log.d(TAG, "Vungle SDK init onSuccess()");
 
             }
-
             @Override
-            public void onAutoCacheAdAvailable(final String placementReferenceID) {
-
+            public void onError(@NonNull VungleError vungleError) {
+                Log.d(TAG, "onError():" + vungleError.getErrorMessage());
             }
         });
+//        Vungle.init(vungleAppId, getApplicationContext(), new InitCallback() {
+//            @Override
+//            public void onSuccess() {
+//                if (Vungle.isInitialized()){
+//                    BannerAdConfig mrecAdConfig = new BannerAdConfig();
+//                    mrecAdConfig.setAdSize(AdConfig.AdSize.VUNGLE_MREC);
+//                    Banners.loadBanner(mrecPlacmentId, mrecAdConfig, vungleLoadAdCallback);
+//                    BannerAdConfig bannerAdConfig = new BannerAdConfig();
+//                    bannerAdConfig.setAdSize(AdConfig.AdSize.BANNER);
+//                    Banners.loadBanner(bannerPlacementID, bannerAdConfig, vungleLoadAdCallback);
+//                }
+//            }
+//
+//            @Override
+//            public void onError(VungleException throwable) {
+//
+//            }
+//
+//            @Override
+//            public void onAutoCacheAdAvailable(final String placementReferenceID) {
+//
+//            }
+//        });
     }
 
-    // Vungle LoadAdCallback
-    private final LoadAdCallback vungleLoadAdCallback = new LoadAdCallback() {
-        @Override
-        public void onAdLoad(final String placementReferenceID) {
-            Log.d(TAG, "LoadAdCallback - onAdLoad" +
-                    "\n\tPlacement Reference ID = " + placementReferenceID);
-
-        }
-
-        @Override
-        public void onError(final String placementReferenceID, VungleException throwable) {
-            Log.d(TAG, "LoadAdCallback - onError" +
-                    "\n\tPlacement Reference ID = " + placementReferenceID +
-                    "\n\tError = " + throwable.getLocalizedMessage());
-
-        }
-    };
-
-
-    //Vungle PlayAdCallback
-    private final PlayAdCallback vunglePlayAdCallback = new PlayAdCallback() {
-        @Override
-        public void creativeId(String creativeId) {
-
-        }
-
-        @Override
-        public void onAdStart(final String placementReferenceID) {
-            Log.d(TAG, "PlayAdCallback - onAdStart" +
-                    "\n\tPlacement Reference ID = " + placementReferenceID);
+//    // Vungle LoadAdCallback
+//    private final LoadAdCallback vungleLoadAdCallback = new LoadAdCallback() {
+//        @Override
+//        public void onAdLoad(final String placementReferenceID) {
+//            Log.d(TAG, "LoadAdCallback - onAdLoad" +
+//                    "\n\tPlacement Reference ID = " + placementReferenceID);
+//
+//        }
+//
+//        @Override
+//        public void onError(final String placementReferenceID, VungleException throwable) {
+//            Log.d(TAG, "LoadAdCallback - onError" +
+//                    "\n\tPlacement Reference ID = " + placementReferenceID +
+//                    "\n\tError = " + throwable.getLocalizedMessage());
+//
+//        }
+//    };
 
 
-        }
-
-        @Override
-        public void onAdViewed(String placementReferenceID) {
-            Log.d(TAG, "PlayAdCallback - onAdViewed" +
-                    "\n\tPlacement Reference ID = " + placementReferenceID);
-        }
-
-        // Deprecated
-        @Override
-        public void onAdEnd(final String placementReferenceID, final boolean completed, final boolean isCTAClicked) {
-            Log.d(TAG, "PlayAdCallback - onAdEnd" +
-                    "\n\tPlacement Reference ID = " + placementReferenceID +
-                    "\n\tView Completed = " + completed + "" +
-                    "\n\tDownload Clicked = " + isCTAClicked);
-        }
-
-        @Override
-        public void onAdEnd(String placementReferenceID) {
-            Log.d(TAG, "PlayAdCallback - onAdEnd" +
-                    "\n\tPlacement Reference ID = " + placementReferenceID);
-        }
-
-        @Override
-        public void onAdClick(String placementReferenceID) {
-            Log.d(TAG, "PlayAdCallback - onAdClick" +
-                    "\n\tPlacement Reference ID = " + placementReferenceID);
-        }
-
-        @Override
-        public void onAdRewarded(String placementReferenceID) {
-            Log.d(TAG, "PlayAdCallback - onAdRewarded" +
-                    "\n\tPlacement Reference ID = " + placementReferenceID);
-        }
-
-        @Override
-        public void onAdLeftApplication(String placementReferenceID) {
-            Log.d(TAG, "PlayAdCallback - onAdLeftApplication" +
-                    "\n\tPlacement Reference ID = " + placementReferenceID);
-        }
-
-        @Override
-        public void onError(final String placementReferenceID, VungleException throwable) {
-            Log.d(TAG, "PlayAdCallback - onError" +
-                    "\n\tPlacement Reference ID = " + placementReferenceID +
-                    "\n\tError = " + throwable.getLocalizedMessage());
-
-        }
-    };
+//    //Vungle PlayAdCallback
+//    private final PlayAdCallback vunglePlayAdCallback = new PlayAdCallback() {
+//        @Override
+//        public void creativeId(String creativeId) {
+//
+//        }
+//
+//        @Override
+//        public void onAdStart(final String placementReferenceID) {
+//            Log.d(TAG, "PlayAdCallback - onAdStart" +
+//                    "\n\tPlacement Reference ID = " + placementReferenceID);
+//
+//
+//        }
+//
+//        @Override
+//        public void onAdViewed(String placementReferenceID) {
+//            Log.d(TAG, "PlayAdCallback - onAdViewed" +
+//                    "\n\tPlacement Reference ID = " + placementReferenceID);
+//        }
+//
+//        // Deprecated
+//        @Override
+//        public void onAdEnd(final String placementReferenceID, final boolean completed, final boolean isCTAClicked) {
+//            Log.d(TAG, "PlayAdCallback - onAdEnd" +
+//                    "\n\tPlacement Reference ID = " + placementReferenceID +
+//                    "\n\tView Completed = " + completed + "" +
+//                    "\n\tDownload Clicked = " + isCTAClicked);
+//        }
+//
+//        @Override
+//        public void onAdEnd(String placementReferenceID) {
+//            Log.d(TAG, "PlayAdCallback - onAdEnd" +
+//                    "\n\tPlacement Reference ID = " + placementReferenceID);
+//        }
+//
+//        @Override
+//        public void onAdClick(String placementReferenceID) {
+//            Log.d(TAG, "PlayAdCallback - onAdClick" +
+//                    "\n\tPlacement Reference ID = " + placementReferenceID);
+//        }
+//
+//        @Override
+//        public void onAdRewarded(String placementReferenceID) {
+//            Log.d(TAG, "PlayAdCallback - onAdRewarded" +
+//                    "\n\tPlacement Reference ID = " + placementReferenceID);
+//        }
+//
+//        @Override
+//        public void onAdLeftApplication(String placementReferenceID) {
+//            Log.d(TAG, "PlayAdCallback - onAdLeftApplication" +
+//                    "\n\tPlacement Reference ID = " + placementReferenceID);
+//        }
+//
+//        @Override
+//        public void onError(final String placementReferenceID, VungleException throwable) {
+//            Log.d(TAG, "PlayAdCallback - onError" +
+//                    "\n\tPlacement Reference ID = " + placementReferenceID +
+//                    "\n\tError = " + throwable.getLocalizedMessage());
+//
+//        }
+//    };
 
     private void initView() {
         mRecyclerView = findViewById(R.id.recycler);
@@ -196,8 +212,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "选中位置:" + position + "  是否是滑动到底部:" + isBottom);
                 if ((position % 5 == 0&&position!=0)){
                     renderMREC();
-                }else if ((position % 4 == 0&&position!=0)){
-                    renderBanner();
                 }else {
                     playVideo();
                 }
@@ -209,71 +223,105 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void renderMREC(){
-        View itemView = mRecyclerView.getChildAt(0);
-        RelativeLayout containerView = itemView.findViewById(R.id.contianer_view);
-        BannerAdConfig mrecAdConfig = new BannerAdConfig();
-        mrecAdConfig.setAdSize(AdConfig.AdSize.VUNGLE_MREC);
-        if (containerView.getVisibility()==View.VISIBLE){
-            if (Banners.canPlayAd(mrecPlacmentId,mrecAdConfig.getAdSize())){
-                if (vungleBanner != null) {
-                    vungleBanner.destroyAd();
-                    vungleBanner = null;
-                    containerView.removeView(vungleBanner);
+        bannerAd = new BannerAd(MainActivity.this, bannerPlacementID, BannerAdSize.VUNGLE_MREC);
+        bannerAd.setAdListener(new BannerAdListener() {
+            @Override
+            public void onAdLoaded(@NotNull BaseAd baseAd) {
+                Log.d(TAG, "onAdLoaded():");
+                View itemView = mRecyclerView.getChildAt(0);
+                RelativeLayout containerView = itemView.findViewById(R.id.contianer_view);
+                if (containerView.getVisibility()==View.VISIBLE){
+                    bannerView = bannerAd.getBannerView();
+                    Log.d(TAG, "bannerView:"+bannerView);
+                    if (bannerView != null) {
+                        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                        containerView.addView(bannerView,layoutParams);
+                    }
                 }
-
-                mrecAdConfig.setAdSize(AdConfig.AdSize.VUNGLE_MREC);
-                mrecAdConfig.setMuted(false);
-
-                vungleBanner=Banners.getBanner(mrecPlacmentId, mrecAdConfig.getAdSize(), vunglePlayAdCallback);
-
-                if (vungleBanner != null) {
-                    containerView.addView(vungleBanner);
-                }
-            }else{
-                Toast.makeText(MainActivity.this,"No Ads",Toast.LENGTH_LONG).show();
+                itemView=null;//内存释放
             }
-        }
-        itemView=null;//内存释放
+
+            @Override
+            public void onAdStart(@NotNull BaseAd baseAd) {
+                Log.d(TAG, "onAdStart():");
+            }
+
+            @Override
+            public void onAdImpression(@NotNull BaseAd baseAd) {
+                Log.d(TAG, "onAdImpression():");
+            }
+
+            @Override
+            public void onAdEnd(@NotNull BaseAd baseAd) {
+                Log.d(TAG, "onAdEnd():");
+            }
+
+            @Override
+            public void onAdClicked(@NotNull BaseAd baseAd) {
+                Log.d(TAG, "onAdClicked():");
+            }
+
+            @Override
+            public void onAdLeftApplication(@NotNull BaseAd baseAd) {
+                Log.d(TAG, "onAdLeftApplication():");
+            }
+
+            @Override
+            public void onAdFailedToLoad(@NotNull BaseAd baseAd, @NotNull VungleError vungleError) {
+                Log.d(TAG, "onAdFailedToLoad():");
+            }
+
+            @Override
+            public void onAdFailedToPlay(@NotNull BaseAd baseAd, @NotNull VungleError vungleError) {
+                Log.d(TAG, "onAdFailedToPlay():");
+            }
+        });
+        bannerAd.load(null);
+
     }
 
 
     private  void  closeMREC(){
         View itemView = mRecyclerView.getChildAt(0);
         RelativeLayout containerView = itemView.findViewById(R.id.contianer_view);
-        if (vungleBanner != null) {
-            vungleBanner.destroyAd();
-            vungleBanner = null;
-            containerView.removeView(vungleBanner);
+        if (bannerView != null) {
+            Log.d(TAG, "closeMREC:+bannerView"+bannerView);
+            containerView.removeAllViews();
+            bannerAd.finishAd();
+            bannerAd.setAdListener(null);
+            bannerView = null;
+
         }
         itemView=null;//内存释放
     }
 
-    private void renderBanner(){
-        View itemView = mRecyclerView.getChildAt(0);
-        RelativeLayout containerView = itemView.findViewById(R.id.contianer_view);
-        BannerAdConfig bannerAdConfig = new BannerAdConfig();
-        bannerAdConfig.setAdSize(AdConfig.AdSize.BANNER);
-        if (containerView.getVisibility()==View.VISIBLE){
-            if (Banners.canPlayAd(bannerPlacementID,bannerAdConfig.getAdSize())){
-                if (vungleBanner != null) {
-                    vungleBanner.destroyAd();
-                    vungleBanner = null;
-                    containerView.removeView(vungleBanner);
-                }
-
-                bannerAdConfig.setAdSize(AdConfig.AdSize.BANNER);
-
-                vungleBanner = Banners.getBanner(bannerPlacementID, bannerAdConfig.getAdSize(), vunglePlayAdCallback);
-
-                if (vungleBanner != null) {
-                    containerView.addView(vungleBanner);
-                }
-            }else{
-                Toast.makeText(MainActivity.this,"No Ads",Toast.LENGTH_LONG).show();
-            }
-        }
-        itemView=null;//内存释放
-    }
+//    private void renderBanner(){
+//        View itemView = mRecyclerView.getChildAt(0);
+//        RelativeLayout containerView = itemView.findViewById(R.id.contianer_view);
+//        BannerAdConfig bannerAdConfig = new BannerAdConfig();
+//        bannerAdConfig.setAdSize(AdConfig.AdSize.BANNER);
+//        if (containerView.getVisibility()==View.VISIBLE){
+//            if (Banners.canPlayAd(bannerPlacementID,bannerAdConfig.getAdSize())){
+//                if (vungleBanner != null) {
+//                    vungleBanner.destroyAd();
+//                    vungleBanner = null;
+//                    containerView.removeView(vungleBanner);
+//                }
+//
+//                bannerAdConfig.setAdSize(AdConfig.AdSize.BANNER);
+//
+//                vungleBanner = Banners.getBanner(bannerPlacementID, bannerAdConfig.getAdSize(), vunglePlayAdCallback);
+//
+//                if (vungleBanner != null) {
+//                    containerView.addView(vungleBanner);
+//                }
+//            }else{
+//                Toast.makeText(MainActivity.this,"No Ads",Toast.LENGTH_LONG).show();
+//            }
+//        }
+//        itemView=null;//内存释放
+//    }
 
 
 
@@ -317,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
 
     class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         private int[] imgs = {R.mipmap.video11, R.mipmap.video12, R.mipmap.video13, R.mipmap.video14, R.mipmap.img_video_2};
-        private int[] videos = {R.raw.video11, R.raw.video12, R.raw.video13, R.raw.video14, R.raw.video_2};
+        private int[] videos = {R.raw.video21, R.raw.video22, R.raw.video23, R.raw.video24, R.raw.video25};
 
         public MyAdapter() {
         }
@@ -333,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(ViewHolder holder, int position) {
 
 
-            if ((position % 5 == 0||position % 4 ==0)&&position!=0) {
+            if ((position % 5 == 0)&&position!=0) {
                 Log.e(TAG, "allen__containerView_____pos"+position);
                 holder.videoView.setVisibility(View.GONE);
                 holder.containerView.setVisibility(View.VISIBLE);
